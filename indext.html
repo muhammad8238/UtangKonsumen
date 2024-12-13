@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sistem Manajemen Utang-Piutang</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+        }
+        nav {
+            background-color: #1e3a8a; /* Navy Blue */
+            color: white;
+        }
+        nav a {
+            color: white;
+        }
+        main {
+            padding: 2rem;
+        }
+        .transaction-list {
+            margin-top: 2rem;
+        }
+        .transaction-list table {
+            width: 100%;
+            margin-top: 1rem;
+        }
+        footer {
+            margin-top: 2rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <nav class="container-fluid">
+        <ul>
+            <li><strong>Manajemen Utang-Piutang khusus konsumen</strong></li>
+        </ul>
+        <ul>
+            <li><a href="#dashboard">Dashboard</a></li>
+            <li><a href="#transaksi">Transaksi</a></li>
+        </ul>
+    </nav>
+    <main class="container">
+        <!-- Dashboard Utama -->
+        <section id="dashboard">
+            <hgroup>
+                <h2>Dashboard</h2>
+                <h3>WEB DI DESAIN KHUSUS OLEH : HUSAIN</h3>
+            </hgroup>
+            <div class="grid">
+                <div>
+                    <h3>Total Piutang</h3>
+                    <p id="total-piutang">Rp 0</p>
+                </div>
+                <div>
+                    <h3>Total Utang</h3>
+                    <p id="total-utang">Rp 0</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Manajemen Transaksi -->
+        <section id="transaksi" class="transaction-list">
+            <hgroup>
+                <h2>Transaksi</h2>
+                <h3>Tambah Transaksi Baru</h3>
+            </hgroup>
+            <form id="transaction-form">
+                <label for="nama-konsumen">Nama Konsumen</label>
+                <input type="text" id="nama-konsumen" name="nama-konsumen" placeholder="Nama Konsumen" required>
+
+                <label for="jenis-transaksi">Jenis Transaksi</label>
+                <select id="jenis-transaksi" name="jenis-transaksi">
+                    <option value="piutang">Piutang</option>
+                    <option value="utang">Utang</option>
+                </select>
+
+                <label for="nominal">Nominal</label>
+                <input type="number" id="nominal" name="nominal" placeholder="Masukkan Nominal" required>
+
+                <label for="tanggal-transaksi">Tanggal Transaksi</label>
+                <input type="date" id="tanggal-transaksi" name="tanggal-transaksi" required>
+
+                <button type="submit">Tambah Transaksi</button>
+            </form>
+            
+            <h3>Daftar Transaksi</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nama Konsumen</th>
+                        <th>Jenis</th>
+                        <th>Nominal</th>
+                        <th>Tanggal</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="transaction-table">
+                    <tr>
+                        <td colspan="5" style="text-align:center;">Belum ada transaksi</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+    <footer class="container">
+        <small>
+            <a href="#">Tentang Kami</a> • <a href="#">Kontak</a>
+        </small>
+    </footer>
+    <script>
+        const form = document.getElementById('transaction-form');
+        const transactionTable = document.getElementById('transaction-table');
+        const totalPiutang = document.getElementById('total-piutang');
+        const totalUtang = document.getElementById('total-utang');
+
+        let piutangSum = 0;
+        let utangSum = 0;
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const namaKonsumen = document.getElementById('nama-konsumen').value;
+            const jenisTransaksi = document.getElementById('jenis-transaksi').value;
+            const nominal = parseFloat(document.getElementById('nominal').value);
+            const tanggalTransaksi = document.getElementById('tanggal-transaksi').value;
+
+            // Tambahkan transaksi ke tabel
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>${namaKonsumen}</td>
+                <td>${jenisTransaksi}</td>
+                <td>Rp ${nominal.toLocaleString()}</td>
+                <td>${tanggalTransaksi}</td>
+                <td>
+                    <button class="edit-btn">Edit</button>
+                    <button class="delete-btn">Hapus</button>
+                </td>
+            `;
+            transactionTable.appendChild(newRow);
+
+            // Update total
+            if (jenisTransaksi === 'piutang') {
+                piutangSum += nominal;
+                totalPiutang.textContent = `Rp ${piutangSum.toLocaleString()}`;
+            } else if (jenisTransaksi === 'utang') {
+                utangSum += nominal;
+                totalUtang.textContent = `Rp ${utangSum.toLocaleString()}`;
+            }
+
+            // Bersihkan formulir
+            form.reset();
+
+            // Hapus placeholder jika ada
+            const placeholderRow = transactionTable.querySelector('tr');
+            if (placeholderRow && placeholderRow.cells.length === 1) {
+                placeholderRow.remove();
+            }
+        });
+
+        // Event Delegation for Edit and Delete
+        transactionTable.addEventListener('click', function (e) {
+            if (e.target.classList.contains('delete-btn')) {
+                // Hapus transaksi
+                const row = e.target.closest('tr');
+                const jenis = row.children[1].textContent;
+                const nominal = parseFloat(row.children[2].textContent.replace(/[^\d]/g, ''));
+
+                // Update total
+                if (jenis === 'Piutang') {
+                    piutangSum -= nominal;
+                    totalPiutang.textContent = `Rp ${piutangSum.toLocaleString()}`;
+                } else if (jenis === 'Utang') {
+                    utangSum -= nominal;
+                    totalUtang.textContent = `Rp ${utangSum.toLocaleString()}`;
+                }
+
+                row.remove();
+                if (!transactionTable.querySelector('tr')) {
+                    transactionTable.innerHTML = `
+                        <tr>
+                            <td colspan="5" style="text-align:center;">Belum ada transaksi</td>
+                        </tr>
+                    `;
+                }
+            }
+
+            if (e.target.classList.contains('edit-btn')) {
+                // Edit transaksi
+                const row = e.target.closest('tr');
+                const nama = row.children[0].textContent;
+                const jenis = row.children[1].textContent.toLowerCase();
+                const nominal = parseFloat(row.children[2].textContent.replace(/[^\d]/g, ''));
+                const tanggal = row.children[3].textContent;
+
+                // Isi formulir dengan data transaksi
+                document.getElementById('nama-konsumen').value = nama;
+                document.getElementById('jenis-transaksi').value = jenis;
+                document.getElementById('nominal').value = nominal;
+                document.getElementById('tanggal-transaksi').value = tanggal;
+
+                // Hapus transaksi dari tabel dan perbarui total
+                row.remove();
+                if (jenis === 'piutang') {
+                    piutangSum -= nominal;
+                    totalPiutang.textContent = `Rp ${piutangSum.toLocaleString()}`;
+                } else if (jenis === 'utang') {
+                    utangSum -= nominal;
+                    totalUtang.textContent = `Rp ${utangSum.toLocaleString()}`;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
